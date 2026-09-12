@@ -34,6 +34,14 @@ def cnpj_eh_valido(cnpj):
     return numeros[-2:] == primeiro_digito + segundo_digito
 
 
+def formatar_telefone(telefone):
+    """Formata um telefone fixo brasileiro como (XX) XXXX-XXXX."""
+    numeros = re.sub(r"\D", "", telefone or "")
+    if len(numeros) != 10:
+        return None
+    return f"({numeros[:2]}) {numeros[2:6]}-{numeros[6:]}"
+
+
 def validar_fornecedor(dados):
     nome = str(dados.get("nome", "")).strip()
     cnpj = str(dados.get("cnpj", "")).strip()
@@ -50,14 +58,17 @@ def validar_fornecedor(dados):
         return None, "Informe um CNPJ válido."
     if email and (len(email) > 150 or not re.fullmatch(r"[^\s@]+@[^\s@]+\.[^\s@]+", email)):
         return None, "Informe um e-mail válido."
-    if len(telefone) > 20:
-        return None, "O telefone deve ter no máximo 20 caracteres."
+    telefone_formatado = None
+    if telefone:
+        telefone_formatado = formatar_telefone(telefone)
+        if not telefone_formatado:
+            return None, "Informe o telefone no formato (XX) XXXX-XXXX."
 
     return {
         "nome": nome,
         "cnpj": formatar_cnpj(cnpj),
         "email": email or None,
-        "telefone": telefone or None,
+        "telefone": telefone_formatado,
     }, None
 
 
@@ -121,4 +132,3 @@ def cadastrar_fornecedor():
 
 if __name__ == "__main__":
     app.run(debug=True)
-

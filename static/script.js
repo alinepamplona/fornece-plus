@@ -1,5 +1,6 @@
 const formulario = document.querySelector("#form-fornecedor");
 const campoCnpj = document.querySelector("#cnpj");
+const campoTelefone = document.querySelector("#telefone");
 const mensagem = document.querySelector("#mensagem");
 const listaFornecedores = document.querySelector("#lista-fornecedores");
 
@@ -19,6 +20,17 @@ function formatarCnpj(valor) {
 
 campoCnpj.addEventListener("input", () => {
     campoCnpj.value = formatarCnpj(campoCnpj.value);
+});
+
+function formatarTelefone(valor) {
+    const numeros = valor.replace(/\D/g, "").slice(0, 10);
+    return numeros
+        .replace(/^(\d{2})(\d)/, "($1) $2")
+        .replace(/(\d{4})(\d)/, "$1-$2");
+}
+
+campoTelefone.addEventListener("input", () => {
+    campoTelefone.value = formatarTelefone(campoTelefone.value);
 });
 
 function criarCelula(texto) {
@@ -63,6 +75,10 @@ formulario.addEventListener("submit", async (evento) => {
         mostrarMensagem("O CNPJ deve ter 14 números.", "erro");
         return;
     }
+    if (dados.telefone && dados.telefone.replace(/\D/g, "").length !== 10) {
+        mostrarMensagem("Informe o telefone no formato (XX) XXXX-XXXX.", "erro");
+        return;
+    }
     if (dados.email && !document.querySelector("#email").checkValidity()) {
         mostrarMensagem("Informe um e-mail válido.", "erro");
         return;
@@ -86,4 +102,3 @@ formulario.addEventListener("submit", async (evento) => {
 });
 
 carregarFornecedores();
-
