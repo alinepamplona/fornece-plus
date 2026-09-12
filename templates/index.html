@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fornece+ | Fornecedores</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <main class="container">
+        <header>
+            <h1>Fornece<span>+</span></h1>
+            <p>Cadastro e consulta de fornecedores</p>
+        </header>
+
+        <section class="card" aria-labelledby="titulo-cadastro">
+            <h2 id="titulo-cadastro">Cadastrar fornecedor</h2>
+            <form id="form-fornecedor" novalidate>
+                <div class="campos-formulario">
+                    <div class="campo campo-largo">
+                        <label for="nome">Nome da empresa *</label>
+                        <input id="nome" name="nome" type="text" maxlength="150" required>
+                    </div>
+                    <div class="campo">
+                        <label for="cnpj">CNPJ *</label>
+                        <input id="cnpj" name="cnpj" type="text" inputmode="numeric" placeholder="00.000.000/0000-00" maxlength="18" required>
+                    </div>
+                    <div class="campo">
+                        <label for="email">E-mail</label>
+                        <input id="email" name="email" type="email" maxlength="150" placeholder="contato@empresa.com">
+                    </div>
+                    <div class="campo">
+                        <label for="telefone">Telefone</label>
+                        <input id="telefone" name="telefone" type="tel" maxlength="20" placeholder="(00) 00000-0000">
+                    </div>
+                </div>
+                <p class="obrigatorio">* Campos obrigatórios</p>
+                <button type="submit">Cadastrar fornecedor</button>
+            </form>
+            <p id="mensagem" class="mensagem" role="status" aria-live="polite"></p>
+        </section>
+
+        <section class="card" aria-labelledby="titulo-lista">
+            <h2 id="titulo-lista">Fornecedores cadastrados</h2>
+            <div class="tabela-responsiva">
+                <table>
+                    <thead>
+                        <tr><th>Empresa</th><th>CNPJ</th><th>E-mail</th><th>Telefone</th><th>Status</th></tr>
+                    </thead>
+                    <tbody id="lista-fornecedores">
+                        <tr><td colspan="5">Carregando fornecedores...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+    </main>
+    <script src="{{ url_for('static', filename='script.js') }}"></script>
+</body>
+</html>
+

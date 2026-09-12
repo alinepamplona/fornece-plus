@@ -1,0 +1,60 @@
+:root {
+    --azul: #176b87;
+    --azul-escuro: #114b5f;
+    --fundo: #f3f7f8;
+    --texto: #213547;
+    --borda: #d5e0e4;
+    --sucesso: #126b3a;
+    --erro: #b42318;
+}
+
+* { box-sizing: border-box; }
+
+body {
+    margin: 0;
+    font-family: Arial, sans-serif;
+    color: var(--texto);
+    background: var(--fundo);
+}
+
+.container { max-width: 1050px; margin: 0 auto; padding: 32px 20px; }
+header { margin-bottom: 24px; }
+h1 { color: var(--azul-escuro); margin: 0; font-size: 2rem; }
+h1 span { color: #f2994a; }
+header p { margin: 6px 0 0; color: #58707a; }
+h2 { margin-top: 0; font-size: 1.25rem; }
+
+.card {
+    background: #fff;
+    border: 1px solid var(--borda);
+    border-radius: 10px;
+    padding: 24px;
+    margin-bottom: 22px;
+    box-shadow: 0 2px 6px rgba(19, 57, 70, .06);
+}
+
+.campos-formulario { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+.campo { display: flex; flex-direction: column; gap: 6px; }
+.campo-largo { grid-column: span 2; }
+label { font-weight: bold; font-size: .9rem; }
+input { width: 100%; padding: 10px; border: 1px solid #b9c9ce; border-radius: 5px; font: inherit; }
+input:focus { outline: 2px solid #8dcedb; border-color: var(--azul); }
+.obrigatorio { color: #5b6870; font-size: .85rem; }
+button { background: var(--azul); color: white; border: 0; border-radius: 5px; padding: 11px 16px; font: inherit; font-weight: bold; cursor: pointer; }
+button:hover { background: var(--azul-escuro); }
+.mensagem { min-height: 20px; margin: 14px 0 0; font-weight: bold; }
+.mensagem.sucesso { color: var(--sucesso); }
+.mensagem.erro { color: var(--erro); }
+.tabela-responsiva { overflow-x: auto; }
+table { width: 100%; border-collapse: collapse; min-width: 620px; }
+th, td { padding: 12px 10px; text-align: left; border-bottom: 1px solid var(--borda); }
+th { color: var(--azul-escuro); background: #eef6f8; }
+td[colspan] { text-align: center; color: #5b6870; }
+
+@media (max-width: 700px) {
+    .container { padding: 20px 14px; }
+    .card { padding: 18px; }
+    .campos-formulario { grid-template-columns: 1fr; }
+    .campo-largo { grid-column: auto; }
+}
+
