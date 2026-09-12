@@ -57,9 +57,3 @@ Abra `http://127.0.0.1:5000` no navegador.
 3. Tente cadastrar o mesmo CNPJ novamente: a aplicação deve informar que ele já existe.
 4. Teste um CNPJ inválido para conferir a validação.
 
-## Próximos commits sugeridos
-
-1. `feat: cria estrutura inicial e banco de fornecedores`
-2. `feat: implementa api de fornecedores`
-3. `feat: adiciona interface de cadastro e consulta`
-
