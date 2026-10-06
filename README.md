@@ -1,25 +1,27 @@
 # Fornece+
 
-Projeto acadêmico para as ACs 1 e 2: fornecedores e notas fiscais.
+Projeto acadêmico para cadastro de fornecedores e notas fiscais.
 
-## O que está disponível
+## Funcionalidades atuais
 
-- Cadastro de empresa, CNPJ, e-mail e telefone.
-- Validação no navegador e no Flask.
-- Validação dos dígitos do CNPJ e bloqueio de CNPJ duplicado.
-- Consulta dos fornecedores em tabela, atualizada após o cadastro.
-- Cadastro de notas fiscais vinculadas a fornecedores, com número, valor e vencimento.
-- Consulta das notas fiscais em tabela, atualizada após o cadastro.
-- Dados armazenados no MySQL.
+- Administrador cadastra e consulta fornecedores.
+- Cada fornecedor recebe um código de acesso incremental e senha padrão igual ao código.
+- Login único para administrador e fornecedores.
+- Administrador gerencia todas as notas fiscais.
+- Fornecedor consulta e cadastra somente as próprias notas fiscais.
 
-## Pré-requisitos
+## Credenciais de demonstração
 
-- Python 3 instalado.
-- MySQL em execução.
+| Tipo de acesso | Login | Senha |
+| --- | --- | --- |
+| Administrador | `admin` | `admin` |
+| Fornecedor | Código exibido no cadastro, por exemplo `10001` | Mesmo código, por exemplo `10001` |
+
+> As credenciais de administrador e a senha padrão dos fornecedores são temporárias, apenas para a apresentação acadêmica.
 
 ## Configuração
 
-1. Abra um terminal na pasta do projeto e crie o ambiente virtual:
+1. Crie e ative o ambiente virtual:
 
    ```powershell
    python -m venv .venv
@@ -32,32 +34,31 @@ Projeto acadêmico para as ACs 1 e 2: fornecedores e notas fiscais.
    pip install -r requirements.txt
    ```
 
-3. Crie o arquivo `.env` a partir de `.env.example` e informe as credenciais do seu MySQL. Não envie esse arquivo ao GitHub.
+3. Copie `.env.example` para `.env` e informe as credenciais reais do MySQL. Mantenha `ADMIN_LOGIN=admin` e `ADMIN_PASSWORD=admin` para a demonstração. Defina também uma `FLASK_SECRET_KEY` local.
 
-4. Crie o banco e a tabela. No terminal, execute:
+4. Para uma instalação nova, execute o `database/schema.sql` no MySQL.
+
+5. Se o banco já foi criado antes da autenticação, execute uma única vez:
 
    ```powershell
-   mysql -u SEU_USUARIO -p < database/schema.sql
+   mysql -u SEU_USUARIO -p < database/migracao_autenticacao.sql
    ```
 
-   O script cria somente o banco e a tabela se eles ainda não existirem; ele não apaga dados existentes.
+   Ao iniciar a aplicação, os fornecedores já existentes receberão código e senha padrão automaticamente.
 
 ## Executar
-
-Com o ambiente virtual ativado, execute:
 
 ```powershell
 python app.py
 ```
 
-Abra `http://127.0.0.1:5000` no navegador.
+Abra `http://127.0.0.1:5000`. A aplicação redireciona para a tela de login.
 
-## Teste manual sugerido
+## Roteiro de teste
 
-1. Cadastre uma empresa fictícia usando um CNPJ válido, por exemplo `11.222.333/0001-81`.
-2. Confirme a mensagem de sucesso e a linha na tabela.
-3. Tente cadastrar o mesmo CNPJ novamente: a aplicação deve informar que ele já existe.
-4. Teste um CNPJ inválido para conferir a validação.
-5. Cadastre uma nota de `R$ 1.500,00` para um fornecedor já existente, preenchendo número e vencimento.
-6. Confirme a mensagem de sucesso e a nota na tabela de notas fiscais.
+1. Entre como administrador com `admin` / `admin`.
+2. Cadastre um fornecedor e anote o login/senha padrão exibidos.
+3. Acesse **Notas fiscais** e cadastre uma nota de `R$ 1.500,00` para o fornecedor.
+4. Saia e entre usando o código do fornecedor como login e senha.
+5. Confira que ele vê somente as próprias notas e não acessa a tela de fornecedores.
 
