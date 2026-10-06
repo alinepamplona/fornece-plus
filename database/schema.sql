@@ -14,3 +14,16 @@ CREATE TABLE IF NOT EXISTS fornecedores (
     criado_em TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
+CREATE TABLE IF NOT EXISTS notas_fiscais (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    fornecedor_id INT NOT NULL,
+    numero VARCHAR(50) NOT NULL,
+    valor DECIMAL(12, 2) NOT NULL,
+    vencimento DATE NOT NULL,
+    status ENUM('Pendente', 'Paga', 'Vencida') NOT NULL DEFAULT 'Pendente',
+    criado_em TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT fk_notas_fiscais_fornecedor
+        FOREIGN KEY (fornecedor_id) REFERENCES fornecedores(id),
+    CONSTRAINT uq_nota_fornecedor_numero UNIQUE (fornecedor_id, numero)
+);
+
