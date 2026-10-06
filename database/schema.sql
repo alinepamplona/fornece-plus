@@ -10,6 +10,8 @@ CREATE TABLE IF NOT EXISTS fornecedores (
     cnpj VARCHAR(18) NOT NULL UNIQUE,
     email VARCHAR(150),
     telefone VARCHAR(20),
+    codigo_acesso INT UNIQUE,
+    senha_hash VARCHAR(255),
     status ENUM('Ativo', 'Inativo') NOT NULL DEFAULT 'Ativo',
     criado_em TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
