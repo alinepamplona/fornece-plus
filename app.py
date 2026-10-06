@@ -1,4 +1,6 @@
 import re
+from datetime import datetime
+from decimal import Decimal, InvalidOperation
 
 import mysql.connector
 from flask import Flask, jsonify, render_template, request
@@ -72,6 +74,44 @@ def validar_fornecedor(dados):
     }, None
 
 
+def validar_nota_fiscal(dados):
+    try:
+        fornecedor_id = int(dados.get("fornecedor_id"))
+    except (TypeError, ValueError):
+        return None, "Selecione um fornecedor válido."
+
+    numero = str(dados.get("numero", "")).strip()
+    valor_recebido = str(dados.get("valor", "")).strip().replace(",", ".")
+    vencimento = str(dados.get("vencimento", "")).strip()
+
+    if fornecedor_id <= 0:
+        return None, "Selecione um fornecedor válido."
+    if not numero:
+        return None, "O número da nota fiscal é obrigatório."
+    if len(numero) > 50:
+        return None, "O número da nota fiscal deve ter no máximo 50 caracteres."
+
+    try:
+        valor = Decimal(valor_recebido)
+    except InvalidOperation:
+        return None, "Informe um valor válido para a nota fiscal."
+
+    if not valor.is_finite() or valor <= 0 or valor > Decimal("9999999999.99"):
+        return None, "O valor da nota fiscal deve ser maior que zero."
+
+    try:
+        datetime.strptime(vencimento, "%Y-%m-%d")
+    except ValueError:
+        return None, "Informe uma data de vencimento válida."
+
+    return {
+        "fornecedor_id": fornecedor_id,
+        "numero": numero,
+        "valor": valor,
+        "vencimento": vencimento,
+    }, None
+
+
 @app.route("/")
 def index():
     return render_template("index.html")
@@ -123,6 +163,70 @@ def cadastrar_fornecedor():
         if erro_mysql.errno == errorcode.ER_DUP_ENTRY:
             return jsonify({"erro": "Este CNPJ já está cadastrado."}), 409
         return jsonify({"erro": "Não foi possível salvar no banco de dados. Verifique a conexão com o MySQL."}), 500
+    finally:
+        if cursor:
+            cursor.close()
+        if conexao and conexao.is_connected():
+            conexao.close()
+
+
+@app.route("/api/notas-fiscais", methods=["GET"])
+def listar_notas_fiscais():
+    conexao = None
+    cursor = None
+    try:
+        conexao = mysql.connector.connect(**obter_configuracao_mysql())
+        cursor = conexao.cursor(dictionary=True)
+        cursor.execute(
+            "SELECT n.id, n.fornecedor_id, f.nome AS fornecedor_nome, n.numero, n.valor, "
+            "DATE_FORMAT(n.vencimento, '%Y-%m-%d') AS vencimento, n.status "
+            "FROM notas_fiscais n "
+            "INNER JOIN fornecedores f ON f.id = n.fornecedor_id "
+            "ORDER BY n.vencimento, n.id DESC"
+        )
+        notas = cursor.fetchall()
+        for nota in notas:
+            nota["valor"] = float(nota["valor"])
+        return jsonify(notas)
+    except Error:
+        return jsonify({"erro": "Não foi possível consultar as notas fiscais no banco de dados."}), 500
+    finally:
+        if cursor:
+            cursor.close()
+        if conexao and conexao.is_connected():
+            conexao.close()
+
+
+@app.route("/api/notas-fiscais", methods=["POST"])
+def cadastrar_nota_fiscal():
+    dados = request.get_json(silent=True)
+    if not isinstance(dados, dict):
+        return jsonify({"erro": "Envie os dados da nota fiscal em formato JSON."}), 400
+
+    nota, erro = validar_nota_fiscal(dados)
+    if erro:
+        return jsonify({"erro": erro}), 400
+
+    conexao = None
+    cursor = None
+    try:
+        conexao = mysql.connector.connect(**obter_configuracao_mysql())
+        cursor = conexao.cursor()
+        cursor.execute("SELECT id FROM fornecedores WHERE id = %s", (nota["fornecedor_id"],))
+        if not cursor.fetchone():
+            return jsonify({"erro": "O fornecedor selecionado não foi encontrado."}), 404
+
+        cursor.execute(
+            "INSERT INTO notas_fiscais (fornecedor_id, numero, valor, vencimento) "
+            "VALUES (%s, %s, %s, %s)",
+            (nota["fornecedor_id"], nota["numero"], nota["valor"], nota["vencimento"]),
+        )
+        conexao.commit()
+        return jsonify({"mensagem": "Nota fiscal cadastrada com sucesso.", "id": cursor.lastrowid}), 201
+    except Error as erro_mysql:
+        if erro_mysql.errno == errorcode.ER_DUP_ENTRY:
+            return jsonify({"erro": "Já existe uma nota com esse número para este fornecedor."}), 409
+        return jsonify({"erro": "Não foi possível salvar a nota fiscal no banco de dados."}), 500
     finally:
         if cursor:
             cursor.close()
