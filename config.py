@@ -16,3 +16,11 @@ def obter_configuracao_mysql():
         "database": os.getenv("MYSQL_DATABASE", "fornece_plus"),
     }
 
+
+def obter_configuracao_autenticacao():
+    return {
+        "secret_key": os.getenv("FLASK_SECRET_KEY", "chave-temporaria-fornece-plus"),
+        "admin_login": os.getenv("ADMIN_LOGIN", "admin"),
+        "admin_password": os.getenv("ADMIN_PASSWORD", "admin"),
+    }
+
