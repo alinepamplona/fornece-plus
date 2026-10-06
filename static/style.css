@@ -37,11 +37,12 @@ h2 { margin-top: 0; font-size: 1.25rem; }
 .campo { display: flex; flex-direction: column; gap: 6px; }
 .campo-largo { grid-column: span 2; }
 label { font-weight: bold; font-size: .9rem; }
-input { width: 100%; padding: 10px; border: 1px solid #b9c9ce; border-radius: 5px; font: inherit; }
-input:focus { outline: 2px solid #8dcedb; border-color: var(--azul); }
+input, select { width: 100%; padding: 10px; border: 1px solid #b9c9ce; border-radius: 5px; font: inherit; background: #fff; }
+input:focus, select:focus { outline: 2px solid #8dcedb; border-color: var(--azul); }
 .obrigatorio { color: #5b6870; font-size: .85rem; }
 button { background: var(--azul); color: white; border: 0; border-radius: 5px; padding: 11px 16px; font: inherit; font-weight: bold; cursor: pointer; }
 button:hover { background: var(--azul-escuro); }
+button:disabled { background: #91a5ad; cursor: not-allowed; }
 .mensagem { min-height: 20px; margin: 14px 0 0; font-weight: bold; }
 .mensagem.sucesso { color: var(--sucesso); }
 .mensagem.erro { color: var(--erro); }
