@@ -1,6 +1,6 @@
 # Fornece+
 
-Projeto acadêmico para a AC 1: cadastro e consulta de fornecedores.
+Projeto acadêmico para as ACs 1 e 2: fornecedores e notas fiscais.
 
 ## O que está disponível
 
@@ -8,6 +8,8 @@ Projeto acadêmico para a AC 1: cadastro e consulta de fornecedores.
 - Validação no navegador e no Flask.
 - Validação dos dígitos do CNPJ e bloqueio de CNPJ duplicado.
 - Consulta dos fornecedores em tabela, atualizada após o cadastro.
+- Cadastro de notas fiscais vinculadas a fornecedores, com número, valor e vencimento.
+- Consulta das notas fiscais em tabela, atualizada após o cadastro.
 - Dados armazenados no MySQL.
 
 ## Pré-requisitos
@@ -56,4 +58,6 @@ Abra `http://127.0.0.1:5000` no navegador.
 2. Confirme a mensagem de sucesso e a linha na tabela.
 3. Tente cadastrar o mesmo CNPJ novamente: a aplicação deve informar que ele já existe.
 4. Teste um CNPJ inválido para conferir a validação.
+5. Cadastre uma nota de `R$ 1.500,00` para um fornecedor já existente, preenchendo número e vencimento.
+6. Confirme a mensagem de sucesso e a nota na tabela de notas fiscais.
 
