@@ -3,98 +3,33 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Fornece+ | Fornecedores e notas fiscais</title>
+    <title>Fornece+ | Administração</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 <body>
     <main class="container">
-        <header>
-            <h1>Fornece<span>+</span></h1>
-            <p>Cadastro e consulta de fornecedores e notas fiscais</p>
+        <header class="cabecalho">
+            <div><h1>Fornece<span>+</span></h1><p>Área do administrador</p></div>
+            <nav><a href="{{ url_for('notas_fiscais') }}">Notas fiscais</a><button class="botao-secundario" type="button" data-logout>Sair</button></nav>
         </header>
-
         <section class="card" aria-labelledby="titulo-cadastro">
             <h2 id="titulo-cadastro">Cadastrar fornecedor</h2>
             <form id="form-fornecedor" novalidate>
                 <div class="campos-formulario">
-                    <div class="campo campo-largo">
-                        <label for="nome">Nome da empresa *</label>
-                        <input id="nome" name="nome" type="text" maxlength="150" required>
-                    </div>
-                    <div class="campo">
-                        <label for="cnpj">CNPJ *</label>
-                        <input id="cnpj" name="cnpj" type="text" inputmode="numeric" placeholder="00.000.000/0000-00" maxlength="18" required>
-                    </div>
-                    <div class="campo">
-                        <label for="email">E-mail</label>
-                        <input id="email" name="email" type="email" maxlength="150" placeholder="contato@empresa.com">
-                    </div>
-                    <div class="campo">
-                        <label for="telefone">Telefone</label>
-                        <input id="telefone" name="telefone" type="tel" inputmode="numeric" maxlength="14" placeholder="(00) 0000-0000">
-                    </div>
+                    <div class="campo campo-largo"><label for="nome">Nome da empresa *</label><input id="nome" name="nome" type="text" maxlength="150" required></div>
+                    <div class="campo"><label for="cnpj">CNPJ *</label><input id="cnpj" name="cnpj" type="text" inputmode="numeric" placeholder="00.000.000/0000-00" maxlength="18" required></div>
+                    <div class="campo"><label for="email">E-mail</label><input id="email" name="email" type="email" maxlength="150" placeholder="contato@empresa.com"></div>
+                    <div class="campo"><label for="telefone">Telefone</label><input id="telefone" name="telefone" type="tel" inputmode="numeric" maxlength="14" placeholder="(00) 0000-0000"></div>
                 </div>
-                <p class="obrigatorio">* Campos obrigatórios</p>
-                <button type="submit">Cadastrar fornecedor</button>
+                <p class="obrigatorio">* Campos obrigatórios</p><button type="submit">Cadastrar fornecedor</button>
             </form>
             <p id="mensagem" class="mensagem" role="status" aria-live="polite"></p>
         </section>
-
         <section class="card" aria-labelledby="titulo-lista">
             <h2 id="titulo-lista">Fornecedores cadastrados</h2>
-            <div class="tabela-responsiva">
-                <table>
-                    <thead>
-                        <tr><th>Empresa</th><th>CNPJ</th><th>E-mail</th><th>Telefone</th><th>Status</th></tr>
-                    </thead>
-                    <tbody id="lista-fornecedores">
-                        <tr><td colspan="5">Carregando fornecedores...</td></tr>
-                    </tbody>
-                </table>
-            </div>
-        </section>
-
-        <section class="card" aria-labelledby="titulo-nota">
-            <h2 id="titulo-nota">Cadastrar nota fiscal</h2>
-            <form id="form-nota-fiscal" novalidate>
-                <div class="campos-formulario">
-                    <div class="campo">
-                        <label for="fornecedor_id">Fornecedor *</label>
-                        <select id="fornecedor_id" name="fornecedor_id" required>
-                            <option value="">Carregando fornecedores...</option>
-                        </select>
-                    </div>
-                    <div class="campo">
-                        <label for="numero-nota">Número da nota *</label>
-                        <input id="numero-nota" name="numero" type="text" maxlength="50" required>
-                    </div>
-                    <div class="campo">
-                        <label for="valor">Valor (R$) *</label>
-                        <input id="valor" name="valor" type="number" min="0.01" step="0.01" inputmode="decimal" placeholder="1500,00" required>
-                    </div>
-                    <div class="campo">
-                        <label for="vencimento">Vencimento *</label>
-                        <input id="vencimento" name="vencimento" type="date" required>
-                    </div>
-                </div>
-                <p class="obrigatorio">* Campos obrigatórios</p>
-                <button id="botao-nota" type="submit">Cadastrar nota fiscal</button>
-            </form>
-            <p id="mensagem-nota" class="mensagem" role="status" aria-live="polite"></p>
-        </section>
-
-        <section class="card" aria-labelledby="titulo-lista-notas">
-            <h2 id="titulo-lista-notas">Notas fiscais cadastradas</h2>
-            <div class="tabela-responsiva">
-                <table>
-                    <thead>
-                        <tr><th>Fornecedor</th><th>Número</th><th>Valor</th><th>Vencimento</th><th>Status</th></tr>
-                    </thead>
-                    <tbody id="lista-notas-fiscais">
-                        <tr><td colspan="5">Carregando notas fiscais...</td></tr>
-                    </tbody>
-                </table>
-            </div>
+            <div class="tabela-responsiva"><table><thead><tr><th>Empresa</th><th>CNPJ</th><th>E-mail</th><th>Telefone</th><th>Login</th><th>Status</th></tr></thead>
+                <tbody id="lista-fornecedores"><tr><td colspan="6">Carregando fornecedores...</td></tr></tbody>
+            </table></div>
         </section>
     </main>
     <script src="{{ url_for('static', filename='script.js') }}"></script>

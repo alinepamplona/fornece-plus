@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fornece+ | Notas fiscais</title><link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <main class="container">
+        <header class="cabecalho">
+            <div><h1>Fornece<span>+</span></h1><p>{% if eh_admin %}Notas fiscais de todos os fornecedores{% else %}Notas fiscais de {{ fornecedor_nome }}{% endif %}</p></div>
+            <nav>{% if eh_admin %}<a href="{{ url_for('index') }}">Fornecedores</a>{% endif %}<button class="botao-secundario" type="button" data-logout>Sair</button></nav>
+        </header>
+        <section class="card" aria-labelledby="titulo-nota">
+            <h2 id="titulo-nota">Cadastrar nota fiscal</h2>
+            <form id="form-nota-fiscal" novalidate><div class="campos-formulario">
+                {% if eh_admin %}<div class="campo"><label for="fornecedor_id">Fornecedor *</label><select id="fornecedor_id" name="fornecedor_id" required><option value="">Carregando fornecedores...</option></select></div>{% endif %}
+                <div class="campo"><label for="numero-nota">Número da nota *</label><input id="numero-nota" name="numero" type="text" maxlength="50" required></div>
+                <div class="campo"><label for="valor">Valor (R$) *</label><input id="valor" name="valor" type="number" min="0.01" step="0.01" inputmode="decimal" placeholder="1500,00" required></div>
+                <div class="campo"><label for="vencimento">Vencimento *</label><input id="vencimento" name="vencimento" type="date" required></div>
+            </div><p class="obrigatorio">* Campos obrigatórios</p><button id="botao-nota" type="submit">Cadastrar nota fiscal</button></form>
+            <p id="mensagem-nota" class="mensagem" role="status" aria-live="polite"></p>
+        </section>
+        <section class="card" aria-labelledby="titulo-lista-notas">
+            <h2 id="titulo-lista-notas">Notas fiscais cadastradas</h2><div class="tabela-responsiva"><table>
+                <thead><tr><th>Fornecedor</th><th>Número</th><th>Valor</th><th>Vencimento</th><th>Status</th></tr></thead>
+                <tbody id="lista-notas-fiscais"><tr><td colspan="5">Carregando notas fiscais...</td></tr></tbody>
+            </table></div>
+        </section>
+    </main>
+    <script src="{{ url_for('static', filename='notas.js') }}"></script>
+</body>
+</html>

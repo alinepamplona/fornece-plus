@@ -19,6 +19,9 @@ body {
 
 .container { max-width: 1050px; margin: 0 auto; padding: 32px 20px; }
 header { margin-bottom: 24px; }
+.cabecalho { display: flex; align-items: center; justify-content: space-between; gap: 16px; }
+.cabecalho nav { display: flex; align-items: center; gap: 12px; }
+.cabecalho a { color: var(--azul-escuro); font-weight: bold; text-decoration: none; }
 h1 { color: var(--azul-escuro); margin: 0; font-size: 2rem; }
 h1 span { color: #f2994a; }
 header p { margin: 6px 0 0; color: #58707a; }
@@ -43,6 +46,8 @@ input:focus, select:focus { outline: 2px solid #8dcedb; border-color: var(--azul
 button { background: var(--azul); color: white; border: 0; border-radius: 5px; padding: 11px 16px; font: inherit; font-weight: bold; cursor: pointer; }
 button:hover { background: var(--azul-escuro); }
 button:disabled { background: #91a5ad; cursor: not-allowed; }
+.botao-secundario { background: #64748b; }
+.botao-secundario:hover { background: #475569; }
 .mensagem { min-height: 20px; margin: 14px 0 0; font-weight: bold; }
 .mensagem.sucesso { color: var(--sucesso); }
 .mensagem.erro { color: var(--erro); }
@@ -57,5 +62,10 @@ td[colspan] { text-align: center; color: #5b6870; }
     .card { padding: 18px; }
     .campos-formulario { grid-template-columns: 1fr; }
     .campo-largo { grid-column: auto; }
+    .cabecalho { align-items: flex-start; flex-direction: column; }
 }
+
+.pagina-login { min-height: 100vh; display: grid; place-items: center; padding: 20px; }
+.card-login { width: min(100%, 420px); }
+.card-login form { display: grid; gap: 16px; }
 
