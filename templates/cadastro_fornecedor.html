@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fornece+ | Cadastro de fornecedor</title><link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <main class="container">
+        <header class="cabecalho">
+            <div><h1>Fornece<span>+</span></h1><p>Cadastro de fornecedor</p></div>
+            <nav><a href="{{ url_for('login') }}">Já tenho acesso</a></nav>
+        </header>
+        <section class="card" aria-labelledby="titulo-cadastro">
+            <h2 id="titulo-cadastro">Cadastre sua empresa</h2>
+            <form id="form-fornecedor" novalidate>
+                <div class="campos-formulario">
+                    <div class="campo campo-largo"><label for="nome">Nome da empresa *</label><input id="nome" name="nome" type="text" maxlength="150" required></div>
+                    <div class="campo"><label for="cnpj">CNPJ *</label><input id="cnpj" name="cnpj" type="text" inputmode="numeric" placeholder="00.000.000/0000-00" maxlength="18" required></div>
+                    <div class="campo"><label for="email">E-mail</label><input id="email" name="email" type="email" maxlength="150" placeholder="contato@empresa.com"></div>
+                    <div class="campo"><label for="telefone">Telefone</label><input id="telefone" name="telefone" type="tel" inputmode="numeric" maxlength="14" placeholder="(00) 0000-0000"></div>
+                </div>
+                <p class="obrigatorio">* Campos obrigatórios</p><button type="submit">Cadastrar fornecedor</button>
+            </form>
+            <p id="mensagem" class="mensagem" role="status" aria-live="polite"></p>
+            <section id="credenciais" class="credenciais" hidden aria-live="polite">
+                <h3>Acesso ao sistema</h3><p>Seu login e sua senha padrão são:</p><p class="codigo-acesso" id="codigo-acesso"></p><p>Use esses dados na <a href="{{ url_for('login') }}">tela de login</a>.</p>
+            </section>
+        </section>
+    </main>
+    <script src="{{ url_for('static', filename='cadastro_fornecedor.js') }}"></script>
+</body>
+</html>

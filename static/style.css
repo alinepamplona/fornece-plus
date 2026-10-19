@@ -68,4 +68,8 @@ td[colspan] { text-align: center; color: #5b6870; }
 .pagina-login { min-height: 100vh; display: grid; place-items: center; padding: 20px; }
 .card-login { width: min(100%, 420px); }
 .card-login form { display: grid; gap: 16px; }
+.link-cadastro { margin-top: 18px; }
+.credenciais { margin-top: 18px; padding: 16px; border: 1px solid #88c9a5; border-radius: 6px; background: #effaf3; }
+.credenciais h3 { margin: 0; color: var(--sucesso); }
+.codigo-acesso { padding: 10px; border-radius: 4px; background: #fff; font-weight: bold; }
 

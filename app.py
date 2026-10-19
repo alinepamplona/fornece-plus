@@ -168,6 +168,15 @@ def login():
     return render_template("login.html")
 
 
+@app.route("/cadastro-fornecedor")
+def cadastro_fornecedor():
+    if session.get("tipo_usuario") == "admin":
+        return redirect(url_for("index"))
+    if session.get("tipo_usuario") == "fornecedor":
+        return redirect(url_for("notas_fiscais"))
+    return render_template("cadastro_fornecedor.html")
+
+
 @app.route("/api/login", methods=["POST"])
 def realizar_login():
     dados = request.get_json(silent=True)
@@ -260,18 +269,7 @@ def listar_fornecedores():
             conexao.close()
 
 
-@app.route("/api/fornecedores", methods=["POST"])
-@login_necessario
-@admin_necessario
-def cadastrar_fornecedor():
-    dados = request.get_json(silent=True)
-    if not isinstance(dados, dict):
-        return jsonify({"erro": "Envie os dados do fornecedor em formato JSON."}), 400
-
-    fornecedor, erro = validar_fornecedor(dados)
-    if erro:
-        return jsonify({"erro": erro}), 400
-
+def salvar_fornecedor(fornecedor):
     conexao = None
     cursor = None
     try:
@@ -288,24 +286,44 @@ def cadastrar_fornecedor():
             (codigo, generate_password_hash(str(codigo)), fornecedor_id),
         )
         conexao.commit()
-        return jsonify(
-            {
-                "mensagem": "Fornecedor cadastrado com sucesso.",
-                "id": fornecedor_id,
-                "credenciais": {"login": str(codigo), "senha": str(codigo)},
-            }
-        ), 201
+        return {"mensagem": "Fornecedor cadastrado com sucesso.", "id": fornecedor_id, "credenciais": {"login": str(codigo), "senha": str(codigo)}}, 201
     except Error as erro_mysql:
         if conexao:
             conexao.rollback()
         if erro_mysql.errno == errorcode.ER_DUP_ENTRY:
-            return jsonify({"erro": "Este CNPJ já está cadastrado."}), 409
-        return jsonify({"erro": "Não foi possível salvar o fornecedor no banco de dados."}), 500
+            return {"erro": "Este CNPJ já está cadastrado."}, 409
+        return {"erro": "Não foi possível salvar o fornecedor no banco de dados."}, 500
     finally:
         if cursor:
             cursor.close()
         if conexao and conexao.is_connected():
             conexao.close()
+
+
+@app.route("/api/cadastro-fornecedor", methods=["POST"])
+def cadastrar_fornecedor_publico():
+    dados = request.get_json(silent=True)
+    if not isinstance(dados, dict):
+        return jsonify({"erro": "Envie os dados do fornecedor em formato JSON."}), 400
+    fornecedor, erro = validar_fornecedor(dados)
+    if erro:
+        return jsonify({"erro": erro}), 400
+    resposta, status = salvar_fornecedor(fornecedor)
+    return jsonify(resposta), status
+
+
+@app.route("/api/fornecedores", methods=["POST"])
+@login_necessario
+@admin_necessario
+def cadastrar_fornecedor():
+    dados = request.get_json(silent=True)
+    if not isinstance(dados, dict):
+        return jsonify({"erro": "Envie os dados do fornecedor em formato JSON."}), 400
+    fornecedor, erro = validar_fornecedor(dados)
+    if erro:
+        return jsonify({"erro": erro}), 400
+    resposta, status = salvar_fornecedor(fornecedor)
+    return jsonify(resposta), status
 
 
 @app.route("/api/notas-fiscais", methods=["GET"])

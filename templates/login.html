@@ -13,6 +13,7 @@
             <button type="submit">Entrar</button>
         </form>
         <p id="mensagem-login" class="mensagem" role="status" aria-live="polite"></p>
+        <p class="link-cadastro">Ainda não possui acesso? <a href="{{ url_for('cadastro_fornecedor') }}">Cadastre sua empresa</a>.</p>
     </main>
     <script src="{{ url_for('static', filename='login.js') }}"></script>
 </body>
