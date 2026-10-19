@@ -103,18 +103,18 @@ async function carregarNotas() {
         if (!resposta.ok) throw new Error(notas.erro);
         listaNotas.innerHTML = "";
         if (!notas.length) {
-            listaNotas.innerHTML = '<tr><td colspan="6">Nenhuma nota fiscal cadastrada.</td></tr>';
+            listaNotas.innerHTML = '<tr><td colspan="5">Nenhuma nota fiscal cadastrada.</td></tr>';
             return;
         }
         notas.forEach((nota) => {
             const linha = document.createElement("tr");
-            [nota.fornecedor_nome, nota.numero, formatarValor(nota.valor), nota.vencimento, nota.status]
+            [nota.fornecedor_nome, nota.numero, formatarValor(nota.valor), nota.vencimento]
                 .forEach((valor) => linha.appendChild(criarCelula(valor)));
             linha.appendChild(criarAcoesAnexo(nota));
             listaNotas.appendChild(linha);
         });
     } catch (erro) {
-        listaNotas.innerHTML = `<tr><td colspan="6">${erro.message || "Erro ao carregar notas fiscais."}</td></tr>`;
+        listaNotas.innerHTML = `<tr><td colspan="5">${erro.message || "Erro ao carregar notas fiscais."}</td></tr>`;
     }
 }
 

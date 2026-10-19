@@ -23,7 +23,6 @@ CREATE TABLE IF NOT EXISTS notas_fiscais (
     valor DECIMAL(12, 2) NOT NULL,
     vencimento DATE NOT NULL,
     arquivo_pdf VARCHAR(255),
-    status ENUM('Pendente', 'Paga', 'Vencida') NOT NULL DEFAULT 'Pendente',
     criado_em TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     CONSTRAINT fk_notas_fiscais_fornecedor
         FOREIGN KEY (fornecedor_id) REFERENCES fornecedores(id),

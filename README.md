@@ -59,7 +59,7 @@ O código é calculado a partir do ID do fornecedor (`id + 10000`) e a senha pad
 
 ### Notas fiscais
 
-Cada nota possui fornecedor, número, valor, vencimento e status inicial `Pendente`.
+Cada nota possui fornecedor, número, valor e vencimento. O status e o controle de pagamentos serão implementados na AC 3.
 
 - O administrador escolhe o fornecedor ao cadastrar uma nota.
 - O fornecedor não vê essa seleção: a aplicação vincula a nota automaticamente à conta dele.
@@ -81,7 +81,7 @@ Administradores podem gerenciar anexos de todas as notas. Fornecedores podem ger
 1. Cadastre um fornecedor pela página pública e anote o login/senha exibidos.
 2. Entre como administrador usando `admin` / `admin`.
 3. Abra **Notas fiscais** e cadastre uma nota de `R$ 1.500,00` para o fornecedor criado.
-4. Confira a mensagem de sucesso e a nota na tabela com status `Pendente`.
+4. Confira a mensagem de sucesso e a nota na tabela.
 5. Opcionalmente, selecione um PDF de até 5 MB e confirme a ação **Ver PDF** na tabela.
 6. Teste **Substituir** e **Remover** para conferir o gerenciamento do anexo.
 7. Saia do sistema e entre como fornecedor com o código exibido.

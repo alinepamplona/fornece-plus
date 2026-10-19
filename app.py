@@ -403,7 +403,7 @@ def listar_notas_fiscais():
         cursor = conexao.cursor(dictionary=True)
         consulta = (
             "SELECT n.id, n.fornecedor_id, f.nome AS fornecedor_nome, n.numero, n.valor, "
-            "DATE_FORMAT(n.vencimento, '%Y-%m-%d') AS vencimento, n.arquivo_pdf, n.status "
+            "DATE_FORMAT(n.vencimento, '%Y-%m-%d') AS vencimento, n.arquivo_pdf "
             "FROM notas_fiscais n INNER JOIN fornecedores f ON f.id = n.fornecedor_id"
         )
         parametros = ()
