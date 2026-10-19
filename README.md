@@ -66,14 +66,26 @@ Cada nota possui fornecedor, número, valor, vencimento e status inicial `Penden
 - A tabela é atualizada após o cadastro.
 - Uma nota não pode repetir o mesmo número para o mesmo fornecedor.
 
+### Anexo de nota fiscal
+
+O anexo é opcional e aceita somente arquivos PDF de até 5 MB. O arquivo é salvo localmente em `uploads/notas_fiscais` e não é enviado ao Git.
+
+- **Ver PDF:** abre o arquivo anexado.
+- **Substituir:** troca o PDF e remove o arquivo anterior após o novo ser salvo.
+- **Remover:** apaga somente o anexo; a nota fiscal permanece cadastrada.
+
+Administradores podem gerenciar anexos de todas as notas. Fornecedores podem gerenciar apenas anexos das próprias notas.
+
 ### Teste da AC 2
 
 1. Cadastre um fornecedor pela página pública e anote o login/senha exibidos.
 2. Entre como administrador usando `admin` / `admin`.
 3. Abra **Notas fiscais** e cadastre uma nota de `R$ 1.500,00` para o fornecedor criado.
 4. Confira a mensagem de sucesso e a nota na tabela com status `Pendente`.
-5. Saia do sistema e entre como fornecedor com o código exibido.
-6. Confirme que ele vê apenas as próprias notas e não acessa a área administrativa.
+5. Opcionalmente, selecione um PDF de até 5 MB e confirme a ação **Ver PDF** na tabela.
+6. Teste **Substituir** e **Remover** para conferir o gerenciamento do anexo.
+7. Saia do sistema e entre como fornecedor com o código exibido.
+8. Confirme que ele vê apenas as próprias notas e não acessa a área administrativa.
 
 ## Instalação e configuração
 
