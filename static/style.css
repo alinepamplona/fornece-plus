@@ -72,4 +72,7 @@ td[colspan] { text-align: center; color: #5b6870; }
 .credenciais { margin-top: 18px; padding: 16px; border: 1px solid #88c9a5; border-radius: 6px; background: #effaf3; }
 .credenciais h3 { margin: 0; color: var(--sucesso); }
 .codigo-acesso { padding: 10px; border-radius: 4px; background: #fff; font-weight: bold; }
+.botao-link { padding: 0; color: var(--azul); background: transparent; font-size: .9rem; font-weight: normal; }
+.botao-link:hover { color: var(--azul-escuro); background: transparent; text-decoration: underline; }
+.botao-link.perigo { color: var(--erro); }
 

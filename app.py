@@ -1,13 +1,17 @@
 import hmac
 import re
+import uuid
 from datetime import datetime
 from decimal import Decimal, InvalidOperation
 from functools import wraps
+from pathlib import Path
 
 import mysql.connector
-from flask import Flask, jsonify, redirect, render_template, request, session, url_for
+from flask import Flask, jsonify, redirect, render_template, request, send_from_directory, session, url_for
 from mysql.connector import Error, errorcode
+from werkzeug.exceptions import RequestEntityTooLarge
 from werkzeug.security import check_password_hash, generate_password_hash
+from werkzeug.utils import secure_filename
 
 from config import obter_configuracao_autenticacao, obter_configuracao_mysql
 
@@ -15,6 +19,13 @@ from config import obter_configuracao_autenticacao, obter_configuracao_mysql
 app = Flask(__name__)
 configuracao_autenticacao = obter_configuracao_autenticacao()
 app.config["SECRET_KEY"] = configuracao_autenticacao["secret_key"]
+app.config["MAX_CONTENT_LENGTH"] = 5 * 1024 * 1024
+PASTA_ANEXOS = Path(app.root_path) / "uploads" / "notas_fiscais"
+
+
+@app.errorhandler(RequestEntityTooLarge)
+def arquivo_muito_grande(_erro):
+    return jsonify({"erro": "O arquivo PDF deve ter no máximo 5 MB."}), 413
 
 
 def login_necessario(funcao):
@@ -132,6 +143,62 @@ def validar_nota_fiscal(dados):
         return None, "Informe uma data de vencimento válida."
 
     return {"fornecedor_id": fornecedor_id, "numero": numero, "valor": valor, "vencimento": vencimento}, None
+
+
+def validar_arquivo_pdf(arquivo, obrigatorio=False):
+    if not arquivo or not arquivo.filename:
+        if obrigatorio:
+            return None, "Selecione um arquivo PDF para anexar."
+        return None, None
+
+    nome_seguro = secure_filename(arquivo.filename)
+    if not nome_seguro.lower().endswith(".pdf"):
+        return None, "Apenas arquivos PDF são permitidos."
+    if arquivo.mimetype != "application/pdf":
+        return None, "O tipo do arquivo deve ser PDF."
+
+    cabecalho = arquivo.stream.read(5)
+    arquivo.stream.seek(0)
+    if cabecalho != b"%PDF-":
+        return None, "O arquivo enviado não é um PDF válido."
+    return arquivo, None
+
+
+def salvar_arquivo_pdf(arquivo):
+    PASTA_ANEXOS.mkdir(parents=True, exist_ok=True)
+    nome_arquivo = f"{uuid.uuid4().hex}.pdf"
+    arquivo.save(PASTA_ANEXOS / nome_arquivo)
+    return nome_arquivo
+
+
+def remover_arquivo_pdf(nome_arquivo):
+    if not nome_arquivo:
+        return
+    caminho = PASTA_ANEXOS / nome_arquivo
+    if caminho.exists():
+        caminho.unlink()
+
+
+def buscar_nota_autorizada(nota_id):
+    conexao = None
+    cursor = None
+    try:
+        conexao = mysql.connector.connect(**obter_configuracao_mysql())
+        cursor = conexao.cursor(dictionary=True)
+        consulta = "SELECT id, fornecedor_id, arquivo_pdf FROM notas_fiscais WHERE id = %s"
+        parametros = [nota_id]
+        if session.get("tipo_usuario") == "fornecedor":
+            consulta += " AND fornecedor_id = %s"
+            parametros.append(session["fornecedor_id"])
+        cursor.execute(consulta, tuple(parametros))
+        return cursor.fetchone()
+    except Error:
+        return None
+    finally:
+        if cursor:
+            cursor.close()
+        if conexao and conexao.is_connected():
+            conexao.close()
 
 
 def preparar_credenciais_existentes():
@@ -336,7 +403,7 @@ def listar_notas_fiscais():
         cursor = conexao.cursor(dictionary=True)
         consulta = (
             "SELECT n.id, n.fornecedor_id, f.nome AS fornecedor_nome, n.numero, n.valor, "
-            "DATE_FORMAT(n.vencimento, '%Y-%m-%d') AS vencimento, n.status "
+            "DATE_FORMAT(n.vencimento, '%Y-%m-%d') AS vencimento, n.arquivo_pdf, n.status "
             "FROM notas_fiscais n INNER JOIN fornecedores f ON f.id = n.fornecedor_id"
         )
         parametros = ()
@@ -348,6 +415,8 @@ def listar_notas_fiscais():
         notas = cursor.fetchall()
         for nota in notas:
             nota["valor"] = float(nota["valor"])
+            nota["tem_anexo"] = bool(nota["arquivo_pdf"])
+            del nota["arquivo_pdf"]
         return jsonify(notas)
     except Error:
         return jsonify({"erro": "Não foi possível consultar as notas fiscais."}), 500
@@ -361,7 +430,7 @@ def listar_notas_fiscais():
 @app.route("/api/notas-fiscais", methods=["POST"])
 @login_necessario
 def cadastrar_nota_fiscal():
-    dados = request.get_json(silent=True)
+    dados = request.form.to_dict() if request.form else request.get_json(silent=True)
     if not isinstance(dados, dict):
         return jsonify({"erro": "Envie os dados da nota fiscal em formato JSON."}), 400
 
@@ -373,26 +442,111 @@ def cadastrar_nota_fiscal():
     if erro:
         return jsonify({"erro": erro}), 400
 
+    arquivo, erro_arquivo = validar_arquivo_pdf(request.files.get("arquivo_pdf"))
+    if erro_arquivo:
+        return jsonify({"erro": erro_arquivo}), 400
+
     conexao = None
     cursor = None
+    nome_arquivo = None
     try:
         conexao = mysql.connector.connect(**obter_configuracao_mysql())
         cursor = conexao.cursor()
         cursor.execute("SELECT id FROM fornecedores WHERE id = %s", (nota["fornecedor_id"],))
         if not cursor.fetchone():
             return jsonify({"erro": "O fornecedor selecionado não foi encontrado."}), 404
+        if arquivo:
+            nome_arquivo = salvar_arquivo_pdf(arquivo)
         cursor.execute(
-            "INSERT INTO notas_fiscais (fornecedor_id, numero, valor, vencimento) VALUES (%s, %s, %s, %s)",
-            (nota["fornecedor_id"], nota["numero"], nota["valor"], nota["vencimento"]),
+            "INSERT INTO notas_fiscais (fornecedor_id, numero, valor, vencimento, arquivo_pdf) VALUES (%s, %s, %s, %s, %s)",
+            (nota["fornecedor_id"], nota["numero"], nota["valor"], nota["vencimento"], nome_arquivo),
         )
         conexao.commit()
         return jsonify({"mensagem": "Nota fiscal cadastrada com sucesso.", "id": cursor.lastrowid}), 201
     except Error as erro_mysql:
         if conexao:
             conexao.rollback()
+        remover_arquivo_pdf(nome_arquivo)
         if erro_mysql.errno == errorcode.ER_DUP_ENTRY:
             return jsonify({"erro": "Já existe uma nota com esse número para este fornecedor."}), 409
         return jsonify({"erro": "Não foi possível salvar a nota fiscal no banco de dados."}), 500
+    finally:
+        if cursor:
+            cursor.close()
+        if conexao and conexao.is_connected():
+            conexao.close()
+
+
+@app.route("/api/notas-fiscais/<int:nota_id>/arquivo", methods=["GET"])
+@login_necessario
+def visualizar_anexo_nota(nota_id):
+    nota = buscar_nota_autorizada(nota_id)
+    if not nota:
+        return jsonify({"erro": "Nota fiscal não encontrada ou sem permissão de acesso."}), 404
+    if not nota["arquivo_pdf"]:
+        return jsonify({"erro": "Esta nota fiscal não possui anexo."}), 404
+    caminho = PASTA_ANEXOS / nota["arquivo_pdf"]
+    if not caminho.exists():
+        return jsonify({"erro": "O arquivo anexado não foi encontrado."}), 404
+    return send_from_directory(PASTA_ANEXOS, nota["arquivo_pdf"], mimetype="application/pdf")
+
+
+@app.route("/api/notas-fiscais/<int:nota_id>/arquivo", methods=["POST"])
+@login_necessario
+def substituir_anexo_nota(nota_id):
+    arquivo, erro_arquivo = validar_arquivo_pdf(request.files.get("arquivo_pdf"), obrigatorio=True)
+    if erro_arquivo:
+        return jsonify({"erro": erro_arquivo}), 400
+
+    nota = buscar_nota_autorizada(nota_id)
+    if not nota:
+        return jsonify({"erro": "Nota fiscal não encontrada ou sem permissão de alteração."}), 404
+
+    nome_novo = None
+    conexao = None
+    cursor = None
+    try:
+        nome_novo = salvar_arquivo_pdf(arquivo)
+        conexao = mysql.connector.connect(**obter_configuracao_mysql())
+        cursor = conexao.cursor()
+        cursor.execute("UPDATE notas_fiscais SET arquivo_pdf = %s WHERE id = %s", (nome_novo, nota_id))
+        conexao.commit()
+        remover_arquivo_pdf(nota["arquivo_pdf"])
+        return jsonify({"mensagem": "Anexo atualizado com sucesso."})
+    except (Error, OSError):
+        if conexao:
+            conexao.rollback()
+        remover_arquivo_pdf(nome_novo)
+        return jsonify({"erro": "Não foi possível atualizar o anexo."}), 500
+    finally:
+        if cursor:
+            cursor.close()
+        if conexao and conexao.is_connected():
+            conexao.close()
+
+
+@app.route("/api/notas-fiscais/<int:nota_id>/arquivo", methods=["DELETE"])
+@login_necessario
+def remover_anexo_nota(nota_id):
+    nota = buscar_nota_autorizada(nota_id)
+    if not nota:
+        return jsonify({"erro": "Nota fiscal não encontrada ou sem permissão de alteração."}), 404
+    if not nota["arquivo_pdf"]:
+        return jsonify({"erro": "Esta nota fiscal não possui anexo."}), 404
+
+    conexao = None
+    cursor = None
+    try:
+        conexao = mysql.connector.connect(**obter_configuracao_mysql())
+        cursor = conexao.cursor()
+        cursor.execute("UPDATE notas_fiscais SET arquivo_pdf = NULL WHERE id = %s", (nota_id,))
+        conexao.commit()
+        remover_arquivo_pdf(nota["arquivo_pdf"])
+        return jsonify({"mensagem": "Anexo removido com sucesso."})
+    except (Error, OSError):
+        if conexao:
+            conexao.rollback()
+        return jsonify({"erro": "Não foi possível remover o anexo."}), 500
     finally:
         if cursor:
             cursor.close()
