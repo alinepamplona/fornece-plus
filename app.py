@@ -23,6 +23,28 @@ app.config["MAX_CONTENT_LENGTH"] = 5 * 1024 * 1024
 PASTA_ANEXOS = Path(app.root_path) / "uploads" / "notas_fiscais"
 
 
+def status_da_nota(modo_status, vencimento, hoje=None):
+    if modo_status != "Automatico":
+        return modo_status
+    hoje = hoje or datetime.now().date()
+    return "Vencida" if vencimento < hoje else "Pendente"
+
+
+def validar_pagamento(dados):
+    modo = dados.get("modo_status")
+    if modo not in ("Automatico", "Pendente", "Vencida", "Paga"):
+        return None, "Selecione um status válido."
+    data_pagamento = None
+    if modo == "Paga":
+        try:
+            data_pagamento = datetime.strptime(str(dados.get("data_pagamento", "")), "%Y-%m-%d").date()
+        except ValueError:
+            return None, "Informe uma data de pagamento válida."
+        if data_pagamento > datetime.now().date():
+            return None, "A data do pagamento não pode estar no futuro."
+    return {"modo_status": modo, "data_pagamento": data_pagamento}, None
+
+
 @app.errorhandler(RequestEntityTooLarge)
 def arquivo_muito_grande(_erro):
     return jsonify({"erro": "O arquivo PDF deve ter no máximo 5 MB."}), 413
@@ -310,6 +332,7 @@ def notas_fiscais():
         "notas_fiscais.html",
         eh_admin=session.get("tipo_usuario") == "admin",
         fornecedor_nome=session.get("fornecedor_nome"),
+        hoje=datetime.now().date().isoformat(),
     )
 
 
@@ -403,7 +426,8 @@ def listar_notas_fiscais():
         cursor = conexao.cursor(dictionary=True)
         consulta = (
             "SELECT n.id, n.fornecedor_id, f.nome AS fornecedor_nome, n.numero, n.valor, "
-            "DATE_FORMAT(n.vencimento, '%Y-%m-%d') AS vencimento, n.arquivo_pdf "
+            "DATE_FORMAT(n.vencimento, '%Y-%m-%d') AS vencimento, n.arquivo_pdf, n.modo_status, "
+            "DATE_FORMAT(n.data_pagamento, '%Y-%m-%d') AS data_pagamento "
             "FROM notas_fiscais n INNER JOIN fornecedores f ON f.id = n.fornecedor_id"
         )
         parametros = ()
@@ -414,6 +438,7 @@ def listar_notas_fiscais():
         cursor.execute(consulta, parametros)
         notas = cursor.fetchall()
         for nota in notas:
+            nota["status"] = status_da_nota(nota["modo_status"], datetime.strptime(nota["vencimento"], "%Y-%m-%d").date())
             nota["valor"] = float(nota["valor"])
             nota["tem_anexo"] = bool(nota["arquivo_pdf"])
             del nota["arquivo_pdf"]
@@ -470,6 +495,44 @@ def cadastrar_nota_fiscal():
         if erro_mysql.errno == errorcode.ER_DUP_ENTRY:
             return jsonify({"erro": "Já existe uma nota com esse número para este fornecedor."}), 409
         return jsonify({"erro": "Não foi possível salvar a nota fiscal no banco de dados."}), 500
+    finally:
+        if cursor:
+            cursor.close()
+        if conexao and conexao.is_connected():
+            conexao.close()
+
+
+@app.route("/api/notas-fiscais/<int:nota_id>/pagamento", methods=["PATCH"])
+@login_necessario
+@admin_necessario
+def atualizar_pagamento(nota_id):
+    dados = request.get_json(silent=True)
+    if not isinstance(dados, dict):
+        return jsonify({"erro": "Envie os dados do pagamento em formato JSON."}), 400
+    pagamento, erro = validar_pagamento(dados)
+    if erro:
+        return jsonify({"erro": erro}), 400
+    conexao = None
+    cursor = None
+    try:
+        conexao = mysql.connector.connect(**obter_configuracao_mysql())
+        cursor = conexao.cursor(dictionary=True)
+        cursor.execute("SELECT modo_status FROM notas_fiscais WHERE id = %s FOR UPDATE", (nota_id,))
+        nota = cursor.fetchone()
+        if not nota:
+            return jsonify({"erro": "Nota fiscal não encontrada."}), 404
+        if nota["modo_status"] == "Paga" and pagamento["modo_status"] != "Paga" and dados.get("confirmar_remocao") is not True:
+            return jsonify({"erro": "Confirme a remoção do pagamento antes de alterar o status."}), 409
+        cursor.execute(
+            "UPDATE notas_fiscais SET modo_status = %s, data_pagamento = %s WHERE id = %s",
+            (pagamento["modo_status"], pagamento["data_pagamento"], nota_id),
+        )
+        conexao.commit()
+        return jsonify({"mensagem": "Pagamento registrado com sucesso." if pagamento["modo_status"] == "Paga" else "Status atualizado com sucesso."})
+    except Error:
+        if conexao:
+            conexao.rollback()
+        return jsonify({"erro": "Não foi possível atualizar o pagamento. Verifique a conexão e a migração da AC 3."}), 500
     finally:
         if cursor:
             cursor.close()
