@@ -75,4 +75,8 @@ td[colspan] { text-align: center; color: #5b6870; }
 .botao-link { padding: 0; color: var(--azul); background: transparent; font-size: .9rem; font-weight: normal; }
 .botao-link:hover { color: var(--azul-escuro); background: transparent; text-decoration: underline; }
 .botao-link.perigo { color: var(--erro); }
+.controle-pagamento { display: grid; gap: 8px; min-width: 180px; }
+.status-paga { color: var(--sucesso); font-weight: bold; }
+.status-vencida { color: var(--erro); font-weight: bold; }
+.status-pendente { color: #835900; font-weight: bold; }
 

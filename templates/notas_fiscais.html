@@ -4,7 +4,7 @@
     <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Fornece+ | Notas fiscais</title><link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
-<body>
+<body data-admin="{{ 'true' if eh_admin else 'false' }}" data-hoje="{{ hoje }}">
     <main class="container">
         <header class="cabecalho">
             <div><h1>Fornece<span>+</span></h1><p>{% if eh_admin %}Notas fiscais de todos os fornecedores{% else %}Notas fiscais de {{ fornecedor_nome }}{% endif %}</p></div>
@@ -22,9 +22,12 @@
             <p id="mensagem-nota" class="mensagem" role="status" aria-live="polite"></p>
         </section>
         <section class="card" aria-labelledby="titulo-lista-notas">
-            <h2 id="titulo-lista-notas">Notas fiscais cadastradas</h2><div class="tabela-responsiva"><table>
-                <thead><tr><th>Fornecedor</th><th>Número</th><th>Valor</th><th>Vencimento</th><th>Anexo</th></tr></thead>
-                <tbody id="lista-notas-fiscais"><tr><td colspan="5">Carregando notas fiscais...</td></tr></tbody>
+            <h2 id="titulo-lista-notas">Notas fiscais cadastradas</h2>
+            <p>No modo automático, notas sem pagamento ficam vencidas após a data de vencimento. As escolhas manuais são mantidas.</p>
+            <button id="atualizar-notas" type="button" class="botao-secundario">Atualizar lista</button>
+            <div class="tabela-responsiva"><table>
+                <thead><tr><th>Fornecedor</th><th>Número</th><th>Valor</th><th>Vencimento</th><th>Status</th><th>Data do pagamento</th><th>Anexo</th>{% if eh_admin %}<th>Atualizar status / pagamento</th>{% endif %}</tr></thead>
+                <tbody id="lista-notas-fiscais"><tr><td colspan="{{ 8 if eh_admin else 7 }}">Carregando notas fiscais...</td></tr></tbody>
             </table></div>
         </section>
     </main>

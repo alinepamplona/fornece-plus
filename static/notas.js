@@ -2,6 +2,71 @@ const formularioNota = document.querySelector("#form-nota-fiscal");
 const seletorFornecedor = document.querySelector("#fornecedor_id");
 const mensagemNota = document.querySelector("#mensagem-nota");
 const listaNotas = document.querySelector("#lista-notas-fiscais");
+const ehAdmin = document.body.dataset.admin === "true";
+const totalColunas = ehAdmin ? 8 : 7;
+
+function formatarData(data) {
+    return data ? data.split("-").reverse().join("/") : "—";
+}
+
+function criarControlePagamento(nota) {
+    const celula = document.createElement("td");
+    const formulario = document.createElement("form");
+    formulario.className = "controle-pagamento";
+    const seletor = document.createElement("select");
+    seletor.setAttribute("aria-label", `Status da nota ${nota.numero}`);
+    ["Automatico", "Pendente", "Vencida", "Paga"].forEach((modo) => {
+        const opcao = document.createElement("option");
+        opcao.value = modo;
+        opcao.textContent = modo === "Automatico" ? "Automático" : modo;
+        opcao.selected = modo === nota.modo_status;
+        seletor.appendChild(opcao);
+    });
+    const rotulo = document.createElement("label");
+    rotulo.textContent = "Data do pagamento";
+    const data = document.createElement("input");
+    data.type = "date";
+    data.max = document.body.dataset.hoje;
+    data.value = nota.data_pagamento || "";
+    rotulo.appendChild(data);
+    function atualizarCampo() {
+        rotulo.hidden = seletor.value !== "Paga";
+        data.disabled = seletor.value !== "Paga";
+        data.required = seletor.value === "Paga";
+    }
+    seletor.addEventListener("change", atualizarCampo);
+    atualizarCampo();
+    const botao = document.createElement("button");
+    botao.type = "submit";
+    botao.textContent = "Salvar";
+    formulario.addEventListener("submit", async (evento) => {
+        evento.preventDefault();
+        const removerPagamento = nota.modo_status === "Paga" && seletor.value !== "Paga";
+        if (removerPagamento && !window.confirm("Esta alteração removerá a data do pagamento. Deseja continuar?")) return;
+        if (seletor.value === "Paga" && (!data.value || data.value > data.max)) {
+            return mostrarMensagemNota("Informe a data do pagamento, sem usar uma data futura.", "erro");
+        }
+        botao.disabled = true;
+        try {
+            const resposta = await fetch(`/api/notas-fiscais/${nota.id}/pagamento`, {
+                method: "PATCH",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ modo_status: seletor.value, data_pagamento: data.value, confirmar_remocao: removerPagamento })
+            });
+            const resultado = await resposta.json();
+            if (!resposta.ok) throw new Error(resultado.erro);
+            mostrarMensagemNota(resultado.mensagem, "sucesso");
+            await carregarNotas();
+        } catch (erro) {
+            mostrarMensagemNota(erro.message || "Não foi possível atualizar o pagamento.", "erro");
+        } finally {
+            botao.disabled = false;
+        }
+    });
+    formulario.append(seletor, rotulo, botao);
+    celula.appendChild(formulario);
+    return celula;
+}
 
 function criarCelula(texto) {
     const celula = document.createElement("td");
@@ -103,18 +168,28 @@ async function carregarNotas() {
         if (!resposta.ok) throw new Error(notas.erro);
         listaNotas.innerHTML = "";
         if (!notas.length) {
-            listaNotas.innerHTML = '<tr><td colspan="5">Nenhuma nota fiscal cadastrada.</td></tr>';
+            listaNotas.innerHTML = `<tr><td colspan="${totalColunas}">Nenhuma nota fiscal cadastrada.</td></tr>`;
             return;
         }
         notas.forEach((nota) => {
             const linha = document.createElement("tr");
-            [nota.fornecedor_nome, nota.numero, formatarValor(nota.valor), nota.vencimento]
+            [nota.fornecedor_nome, nota.numero, formatarValor(nota.valor), formatarData(nota.vencimento)]
                 .forEach((valor) => linha.appendChild(criarCelula(valor)));
+            const status = criarCelula(nota.status);
+            status.className = `status-${nota.status.toLowerCase()}`;
+            if (nota.modo_status === "Automatico") status.appendChild(document.createTextNode(" (automático)"));
+            linha.append(status, criarCelula(formatarData(nota.data_pagamento)));
             linha.appendChild(criarAcoesAnexo(nota));
+            if (ehAdmin) linha.appendChild(criarControlePagamento(nota));
             listaNotas.appendChild(linha);
         });
     } catch (erro) {
-        listaNotas.innerHTML = `<tr><td colspan="5">${erro.message || "Erro ao carregar notas fiscais."}</td></tr>`;
+        listaNotas.replaceChildren();
+        const linha = document.createElement("tr");
+        const celula = criarCelula(erro.message || "Erro ao carregar notas fiscais.");
+        celula.colSpan = totalColunas;
+        linha.appendChild(celula);
+        listaNotas.appendChild(linha);
     }
 }
 
@@ -143,4 +218,5 @@ document.querySelectorAll("[data-logout]").forEach((botao) => botao.addEventList
 }));
 
 carregarFornecedores().catch((erro) => mostrarMensagemNota(erro.message || "Erro ao carregar fornecedores.", "erro"));
+document.querySelector("#atualizar-notas").addEventListener("click", carregarNotas);
 carregarNotas();
