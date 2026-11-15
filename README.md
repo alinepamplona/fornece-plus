@@ -126,8 +126,22 @@ python app.py
 
 Abra `http://127.0.0.1:5000`. A aplicação redireciona para a tela de login; o cadastro público está disponível em `/cadastro-fornecedor`.
 
+## AC 3 — Pagamentos e status
+
+O administrador pode escolher Automático, Pendente, Vencida ou Paga na tabela de notas e clicar em **Salvar**. O fornecedor apenas consulta o status e a data do pagamento das próprias notas.
+
+- Automático: calcula o status ao consultar ou atualizar a lista. Vencimento anterior a hoje significa Vencida; hoje ou depois significa Pendente.
+- Pendente e Vencida: escolhas manuais mantidas até outra alteração.
+- Paga: registra o pagamento integral e exige uma data válida, de hoje ou anterior. Salvar novamente corrige a data, sem criar outro pagamento.
+- Sair de Paga exige confirmação e remove a data do pagamento.
+
+Em bancos existentes, execute **uma única vez** o arquivo `database/migracao_pagamentos.sql` pelo MySQL Workbench e reinicie a aplicação. Não execute essa migração se criou o banco com o `schema.sql` atualizado. Ela adiciona `modo_status` e `data_pagamento`, sem apagar notas. Novas notas e notas migradas começam no modo automático. O cálculo usa a data local do computador que executa o Flask; configure-o para o horário de Brasília.
+
+Para testar: cadastre notas com vencimento ontem, hoje e amanhã; confira Vencida, Pendente e Pendente. Escolha um status manual e atualize a lista para confirmar que ele permanece. Registre um pagamento passado, tente uma data futura e teste a confirmação ao remover o pagamento. Entre como fornecedor e confira que os controles de alteração não aparecem.
+
+Testes automatizados: `python -m unittest discover -s tests -v`.
+
 ## Próximas etapas
 
-- AC 3: registrar pagamentos e atualizar o status das notas.
 - AC 4: dashboard financeiro com totais e despesas por fornecedor.
 
