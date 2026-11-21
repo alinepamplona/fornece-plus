@@ -141,7 +141,18 @@ Para testar: cadastre notas com vencimento ontem, hoje e amanhã; confira Vencid
 
 Testes automatizados: `python -m unittest discover -s tests -v`.
 
-## Próximas etapas
+## AC 4 — Dashboard financeiro
 
-- AC 4: dashboard financeiro com totais e despesas por fornecedor.
+Entre como administrador e clique em **Dashboard financeiro**. A página mostra os valores de todo o histórico e lista os fornecedores com notas fiscais, começando pelo maior total em notas.
+
+Use o campo **Fornecedor** para consultar somente uma empresa. Os cartões e a tabela são atualizados juntos. Os valores pagos aparecem em verde, os valores em aberto em amarelo e os vencidos em vermelho.
+
+- **Total em notas** soma todas as notas cadastradas.
+- **Pago** soma as notas com status Paga.
+- **Em aberto** soma as notas pendentes e vencidas.
+- **Vencido** mostra a parcela em atraso do valor em aberto.
+
+O dashboard usa as mesmas regras de status da AC 3. Ele consulta o MySQL ao abrir a página e usa o banco já preparado para a AC 3, sem precisar de uma migração adicional.
+
+Para testar, cadastre R$ 100,00 em uma nota paga e R$ 50,00 em uma nota vencida para um fornecedor. Cadastre R$ 80,00 em uma nota pendente para outro fornecedor. Os cartões devem mostrar R$ 230,00 em notas, R$ 100,00 pagos, R$ 130,00 em aberto e R$ 50,00 vencidos. Registre o pagamento da nota vencida e reabra o dashboard. O pago deve subir para R$ 150,00, o aberto deve cair para R$ 80,00 e o vencido deve zerar.
 
