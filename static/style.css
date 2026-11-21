@@ -20,7 +20,7 @@ body {
 .container { max-width: 1050px; margin: 0 auto; padding: 32px 20px; }
 header { margin-bottom: 24px; }
 .cabecalho { display: flex; align-items: center; justify-content: space-between; gap: 16px; }
-.cabecalho nav { display: flex; align-items: center; gap: 12px; }
+.cabecalho nav { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; }
 .cabecalho a { color: var(--azul-escuro); font-weight: bold; text-decoration: none; }
 h1 { color: var(--azul-escuro); margin: 0; font-size: 2rem; }
 h1 span { color: #f2994a; }
@@ -79,4 +79,23 @@ td[colspan] { text-align: center; color: #5b6870; }
 .status-paga { color: var(--sucesso); font-weight: bold; }
 .status-vencida { color: var(--erro); font-weight: bold; }
 .status-pendente { color: #835900; font-weight: bold; }
+
+.resumo-financeiro {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 210px), 1fr));
+    gap: 12px;
+    margin: 0 0 22px;
+}
+.resumo-financeiro .card { margin: 0; }
+.resumo-financeiro dt { font-weight: bold; }
+.resumo-financeiro dd { margin: 8px 0 0; font-size: 1.35rem; font-weight: bold; }
+.card-pago { border-color: #88c9a5; background: #effaf3; }
+.card-pago dd { color: var(--sucesso); }
+.card-aberto { border-color: #e9c46a; background: #fff8df; }
+.card-aberto dd { color: #835900; }
+.card-vencido { border-color: #e5a1a1; background: #fff1f1; }
+.card-vencido dd { color: var(--erro); }
+.campo-filtro { width: min(100%, 360px); margin: 18px 0; }
+.tabela-financeira :is(th, td):not(:first-child) { text-align: right; }
+.tabela-financeira td:not(:first-child) { white-space: nowrap; }
 

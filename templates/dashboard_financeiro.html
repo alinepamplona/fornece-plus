@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fornece+ | Dashboard financeiro</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <main class="container">
+        <header class="cabecalho">
+            <div>
+                <h1>Dashboard financeiro</h1>
+                <p>Histórico completo das notas fiscais</p>
+            </div>
+            <nav>
+                <a href="{{ url_for('index') }}">Fornecedores</a>
+                <a href="{{ url_for('notas_fiscais') }}">Notas fiscais</a>
+                <button class="botao-secundario" type="button" data-logout>Sair</button>
+            </nav>
+        </header>
+
+        <dl class="resumo-financeiro">
+            <div class="card"><dt>Total em notas</dt><dd id="total_notas">—</dd></div>
+            <div class="card card-pago"><dt>Total pago</dt><dd id="pago">—</dd></div>
+            <div class="card card-aberto"><dt>Total em aberto</dt><dd id="em_aberto">—</dd></div>
+            <div class="card card-vencido"><dt>Total vencido</dt><dd id="vencido">—</dd></div>
+        </dl>
+
+        <section class="card" aria-labelledby="titulo-despesas">
+            <h2 id="titulo-despesas">Despesas por fornecedor</h2>
+            <p>O valor vencido faz parte do total em aberto.</p>
+            <div class="campo campo-filtro">
+                <label for="filtro-fornecedor">Fornecedor</label>
+                <select id="filtro-fornecedor" name="fornecedor_id" disabled>
+                    <option value="">Todos os fornecedores</option>
+                </select>
+            </div>
+            <p id="mensagem-dashboard" class="mensagem" role="status">Carregando dados financeiros...</p>
+            <div class="tabela-responsiva" id="tabela-despesas" hidden>
+                <table class="tabela-financeira">
+                    <thead>
+                        <tr>
+                            <th scope="col">Fornecedor</th>
+                            <th scope="col">Total em notas</th>
+                            <th scope="col">Pago</th>
+                            <th scope="col">Em aberto</th>
+                            <th scope="col">Vencido</th>
+                        </tr>
+                    </thead>
+                    <tbody id="lista-despesas"></tbody>
+                </table>
+            </div>
+        </section>
+    </main>
+    <script src="{{ url_for('static', filename='script.js') }}" defer></script>
+    <script src="{{ url_for('static', filename='dashboard.js') }}" defer></script>
+</body>
+</html>

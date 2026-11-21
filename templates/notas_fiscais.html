@@ -8,7 +8,7 @@
     <main class="container">
         <header class="cabecalho">
             <div><h1>Fornece<span>+</span></h1><p>{% if eh_admin %}Notas fiscais de todos os fornecedores{% else %}Notas fiscais de {{ fornecedor_nome }}{% endif %}</p></div>
-            <nav>{% if eh_admin %}<a href="{{ url_for('index') }}">Fornecedores</a>{% endif %}<button class="botao-secundario" type="button" data-logout>Sair</button></nav>
+            <nav>{% if eh_admin %}<a href="{{ url_for('index') }}">Fornecedores</a><a href="{{ url_for('dashboard_financeiro') }}">Dashboard financeiro</a>{% endif %}<button class="botao-secundario" type="button" data-logout>Sair</button></nav>
         </header>
         <section class="card" aria-labelledby="titulo-nota">
             <h2 id="titulo-nota">Cadastrar nota fiscal</h2>

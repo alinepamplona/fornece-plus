@@ -8,7 +8,7 @@
     <main class="container">
         <header class="cabecalho">
             <div><h1>Fornece<span>+</span></h1><p>Área do administrador</p></div>
-            <nav><a href="{{ url_for('notas_fiscais') }}">Notas fiscais</a><button class="botao-secundario" type="button" data-logout>Sair</button></nav>
+            <nav><a href="{{ url_for('notas_fiscais') }}">Notas fiscais</a><a href="{{ url_for('dashboard_financeiro') }}">Dashboard financeiro</a><button class="botao-secundario" type="button" data-logout>Sair</button></nav>
         </header>
         <section class="card" aria-labelledby="titulo-lista">
             <h2 id="titulo-lista">Fornecedores cadastrados</h2>

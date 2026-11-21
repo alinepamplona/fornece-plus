@@ -32,4 +32,4 @@ document.querySelectorAll("[data-logout]").forEach((botao) => botao.addEventList
     window.location.href = "/login";
 }));
 
-carregarFornecedores();
+if (listaFornecedores) carregarFornecedores();

@@ -336,6 +336,64 @@ def notas_fiscais():
     )
 
 
+@app.route("/dashboard-financeiro")
+@login_necessario
+@admin_necessario
+def dashboard_financeiro():
+    return render_template("dashboard_financeiro.html")
+
+
+@app.route("/api/dashboard-financeiro", methods=["GET"])
+@login_necessario
+@admin_necessario
+def consultar_dashboard_financeiro():
+    conexao = None
+    cursor = None
+    try:
+        conexao = mysql.connector.connect(**obter_configuracao_mysql())
+        cursor = conexao.cursor(dictionary=True)
+        cursor.execute(
+            "SELECT n.fornecedor_id, f.nome, f.cnpj, n.valor, n.modo_status, n.vencimento "
+            "FROM notas_fiscais n INNER JOIN fornecedores f ON f.id = n.fornecedor_id"
+        )
+        totais_iniciais = dict.fromkeys(("total_notas", "pago", "em_aberto", "vencido"), Decimal("0.00"))
+        resumo = totais_iniciais.copy()
+        fornecedores = {}
+        hoje = datetime.now().date()
+
+        for nota in cursor:
+            fornecedor_id = nota["fornecedor_id"]
+            if fornecedor_id not in fornecedores:
+                fornecedores[fornecedor_id] = {
+                    "id": fornecedor_id, "nome": nota["nome"], "cnpj": nota["cnpj"], **totais_iniciais
+                }
+
+            status = status_da_nota(nota["modo_status"], nota["vencimento"], hoje)
+            campos = ["total_notas", "pago" if status == "Paga" else "em_aberto"]
+            if status == "Vencida":
+                campos.append("vencido")
+
+            for campo in campos:
+                resumo[campo] += nota["valor"]
+                fornecedores[fornecedor_id][campo] += nota["valor"]
+
+        fornecedores_ordenados = sorted(
+            fornecedores.values(), key=lambda fornecedor: (-fornecedor["total_notas"], fornecedor["id"])
+        )
+        for totais in [resumo, *fornecedores_ordenados]:
+            for campo in totais_iniciais:
+                totais[campo] = format(totais[campo], ".2f")
+
+        return jsonify(resumo=resumo, fornecedores=fornecedores_ordenados)
+    except Error:
+        return jsonify(erro="Não foi possível consultar o dashboard financeiro."), 500
+    finally:
+        if cursor:
+            cursor.close()
+        if conexao and conexao.is_connected():
+            conexao.close()
+
+
 @app.route("/api/fornecedores", methods=["GET"])
 @login_necessario
 @admin_necessario
