@@ -9,6 +9,12 @@ Projeto acadêmico para controle de fornecedores e notas fiscais.
 - HTML, CSS e JavaScript puro
 - `python-dotenv`
 
+## Diagramas do projeto
+
+![Diagramas do Projeto Fornece+](docs/diagramas-projeto-fornece-mais.png)
+
+A imagem apresenta o diagrama de classes e o diagrama de arquitetura do Fornece+.
+
 ## AC 1 — Cadastro e consulta de fornecedores
 
 ### Objetivo
